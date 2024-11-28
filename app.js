@@ -2,6 +2,9 @@
 const express = require('express');
 const cors = require('cors');
 
+//Database
+const client = require('./config/database');
+
 //Configuration
 const app = express();
 app.use(cors());
