@@ -77,3 +77,4 @@ You’ll need to create a .env file in the root directory with the following val
     nodemon server.js
 
 
+[Deployed Backend Link](https://icapital-financial-planner-backend.onrender.com/)
