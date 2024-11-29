@@ -1,3 +1,5 @@
+'use strict';
+
 const { Sequelize, Op } = require('sequelize');
 
 const sequelize = process.env.DATABASE_URL
