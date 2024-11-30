@@ -1,7 +1,7 @@
 'use strict';
 
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const User = require('../models/userModels');
 const { Op } = require('sequelize');
 const { server } = require('@passwordless-id/webauthn');
