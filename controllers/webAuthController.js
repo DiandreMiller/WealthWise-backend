@@ -5,7 +5,7 @@ const generateRegistration = (request, response) => {
     const { username } = request.body; 
 
     const rp = {
-        name: 'Red Canary',
+        name: 'Wealth Wise',
         id: String(process.env.EXPECTED_RPID),
     };
 

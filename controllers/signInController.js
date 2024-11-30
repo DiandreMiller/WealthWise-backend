@@ -15,12 +15,14 @@ async function signIn(request, response) {
 
         // Check if identifier is provided
         if (!identifier) {
+            console.warn('Identifier is missing in request body');
             return response.status(400).json({ error: 'Email, username, or phone number is required' });
         }
 
-        console.log('Sign-in request received:', identifier);
+        console.log('Sign-in request received with identifier:', identifier);
 
         // Check if user exists
+        console.log('Querying database for user...');
         const user = await User.findOne({
             where: {
                 [Op.or]: [
@@ -32,50 +34,53 @@ async function signIn(request, response) {
         });
 
         if (!user) {
-            console.error('Invalid login credentials for identifier:', identifier);
+            console.error('No user found for identifier:', identifier);
             return response.status(401).json({ error: 'Invalid login credentials' });
         }
+        console.log('User found:', user.username);
 
         // Check if user account is locked
         if (user.accountLocked) {
+            console.log('User account is locked. Checking lockout period...');
             const lockOutEnd = new Date(user.lastFailedLogin);
             lockOutEnd.setHours(lockOutEnd.getHours() + 6);
-            console.log('Account locked. Lockout ends at:', lockOutEnd.toLocaleString());
+            console.log('Lockout end time:', lockOutEnd.toISOString());
 
             if (new Date() < lockOutEnd) {
-                const formattedLoginTime = lockOutEnd.toLocaleString();
-                return response.status(403).json({ error: `Account is locked, please try again at ${formattedLoginTime}` });
+                console.warn('Account still locked. Current time:', new Date().toISOString());
+                return response.status(403).json({ error: `Account is locked, please try again at ${lockOutEnd.toLocaleString()}` });
             } else {
-                // Reset account lock if the lockout period has passed
+                console.log('Lockout period has expired. Unlocking account...');
                 user.failedLoginAttempts = 0;
                 user.accountLocked = false;
                 await user.save();
-                console.log('Account unlocked, failed attempts reset.');
+                console.log('Account unlocked successfully');
             }
         }
 
-        // Check if user is signing in with a password or WebAuthn
+        // Determine authentication method
         if (password) {
-            // User is signing in with password
-            console.log('Password received for verification:', password);
-            console.log('Stored hashed password:', user.password);
-            
-            // Check password
+            console.log('Password provided for authentication');
+            console.log('Stored hashed password for user:', user.password);
+
             const passwordMatch = await bcrypt.compare(password.trim(), user.password.trim());
+            console.log('Password comparison result:', passwordMatch);
+
             if (!passwordMatch) {
+                console.warn('Password mismatch for user:', user.username);
                 await updateFailedAttempts(user, identifier);
                 return response.status(401).json({ error: 'Invalid login credentials' });
             }
 
-            // Successful login with password
+            console.log('Password authentication successful for user:', user.username);
             user.failedLoginAttempts = 0;
             await user.save();
-            console.log('User logged in successfully with password:', user.username);
         } else if (webauthnCredential) {
-            const challenge = user.challenge;
-            console.log('Challenge retrieved for user:', challenge);
+            console.log('WebAuthn credential provided. Verifying...');
 
-            // Verify WebAuthn credential
+            const challenge = user.challenge;
+            console.log('Stored challenge for user:', challenge);
+
             try {
                 const authenticationParsed = await server.verifyAuthentication(webauthnCredential, {
                     publicKey: user.webauthnPublicKey,
@@ -85,43 +90,54 @@ async function signIn(request, response) {
                     counter: user.authCounter,
                 });
 
-                // Update the authentication counter with the value from authenticationParsed
-                user.authCounter = authenticationParsed.counter || user.authCounter + 1; 
-                user.challenge = null; // Reset challenge after successful authentication
+                console.log('WebAuthn verification successful:', authenticationParsed);
+
+                user.authCounter = authenticationParsed.counter || user.authCounter + 1;
+                user.challenge = null;
                 await user.save();
-                console.log('User logged in successfully with WebAuthn:', user.username);
+                console.log('Updated user authentication counter and reset challenge');
             } catch (error) {
-                console.error('WebAuthn verification failed for identifier:', identifier, error);
+                console.error('WebAuthn verification failed:', error);
                 return response.status(401).json({ error: 'Invalid WebAuthn credentials' });
             }
         } else {
+            console.warn('No valid authentication method provided');
             return response.status(400).json({ error: 'No valid authentication method provided' });
         }
 
         // Generate token
+        console.log('Generating JWT token...');
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        console.log('JWT token generated:', token);
 
-        // Send the response with the token and other relevant data
-        response.status(200).json({ message: 'Sign in is a success', token,
-             expiresIn: 3600, user: { id: user.id, username: user.username } });
+        response.status(200).json({
+            message: 'Sign in successful',
+            token,
+            expiresIn: 3600,
+            user: { id: user.id, username: user.username }
+        });
+        console.log('Sign-in response sent for user:', user.username);
 
     } catch (error) {
-        console.error('Error during sign-in:', error);
+        console.error('Unhandled error during sign-in:', error);
         response.status(500).json({ error: error.message });
     }
 }
 
 // Update failed attempts
 async function updateFailedAttempts(user, identifier) {
+    console.log('Incrementing failed login attempts for user:', user.username);
+
     user.failedLoginAttempts += 1;
     user.lastFailedLogin = new Date();
     await user.save();
 
-    console.error('Incorrect attempt for identifier:', identifier);
+    console.warn('Failed login attempts updated. Total attempts:', user.failedLoginAttempts);
 
     if (user.failedLoginAttempts >= 3) {
         user.accountLocked = true;
         await user.save();
+        console.error('Account locked due to too many failed attempts:', user.username);
         throw new Error('Account is locked due to too many failed attempts. Try again later.');
     }
 }
