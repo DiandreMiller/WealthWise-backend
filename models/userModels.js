@@ -32,15 +32,17 @@ User.init({
         allowNull: false,
         validate: {
             len: [60, 500],
-        }
-    },
+        },
+        field: 'password_hash'
+    }, 
     phoneNumber: {
         type: DataTypes.STRING,
         allowNull: true, 
         unique: true,
         validate: {
             is: /^\+?[1-9]\d{1,14}$/ 
-        }
+        },
+        // field: 'phone_number'
     },
     failedLoginAttempts: {
         type: DataTypes.INTEGER,
@@ -85,7 +87,10 @@ User.init({
     sequelize,              
     modelName: 'User',      
     tableName: 'users',     
-    timestamps: true,       
+    timestamps: true,   
+    // underscored: true,      
+    createdAt: 'created_at', 
+    updatedAt: 'updated_at'   
 });
 
 module.exports = User;

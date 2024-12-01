@@ -19,11 +19,11 @@ const logIncomingRequest = require('./middlewares/incomingRequests');
 
 // Validations
 const signInValidation = require('./validations/userValidationsSignIn');
-// const signUpValidation = require('./validations/userValidationsSignUp');
+const signUpValidation = require('./validations/userValidationsSignUp');
 
 //Controllers
-const signInController = require('./controllers/signInController'); //Crash
-// const signUpController = require('./controllers/signUpController'); //Crash
+const signInController = require('./controllers/signInController'); 
+const signUpController = require('./controllers/signUpController'); 
 // const passkeyController = require('./controllers/passkeyController'); //Crash
 // const authenticatePasskeyController = require('./controllers/authenticatePasskeyController'); //Crash
 const challengeController = require('./controllers/challengeController');
