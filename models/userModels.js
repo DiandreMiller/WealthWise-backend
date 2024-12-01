@@ -1,15 +1,15 @@
-const { Model , DataTypes } = require('sequelize');
+const { Model, DataTypes } = require('sequelize');
 const { v4: uuidv4 } = require('uuid');
 const { sequelize } = require('../config/database');
 
 class User extends Model {}
 
-//Define the User model
+// Define the User model
 User.init({
     id: {
         type: DataTypes.UUID,
         primaryKey: true,
-        defaultValue: () => uuidv4()
+        defaultValue: uuidv4, 
     },
     username: {
         type: DataTypes.STRING,
