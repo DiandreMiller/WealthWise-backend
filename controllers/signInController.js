@@ -64,6 +64,8 @@ async function signIn(request, response) {
             console.log('Stored hashed password for user:', user.password);
 
             const passwordMatch = await bcrypt.compare(password.trim(), user.password.trim());
+            // const passwordMatch = await bcrypt.compare(password, user.password);
+
             console.log('Password comparison result:', passwordMatch);
 
             if (!passwordMatch) {

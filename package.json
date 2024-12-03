@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@passwordless-id/webauthn": "^2.1.2",
+    "@simplewebauthn/server": "^9.0.3",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
