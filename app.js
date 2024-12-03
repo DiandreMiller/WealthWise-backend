@@ -24,8 +24,8 @@ const signUpValidation = require('./validations/userValidationsSignUp');
 //Controllers
 const signInController = require('./controllers/signInController'); 
 const signUpController = require('./controllers/signUpController'); 
-// const passkeyController = require('./controllers/passkeyController'); //Crash
-// const authenticatePasskeyController = require('./controllers/authenticatePasskeyController'); //Crash
+const passkeyController = require('./controllers/passkeyController'); 
+const authenticatePasskeyController = require('./controllers/authenticatePasskeyController');
 const challengeController = require('./controllers/challengeController');
 
 //Check incoming requests
@@ -43,8 +43,8 @@ app.post('/sign-in', limiter,
         body('password').trim().escape().notEmpty().withMessage('Password is required')
     ], 
     async (request, response) => {
-    // console.log('Incoming request:', request.method, request.originalUrl);
-    // console.log('Request Body:', request.body);
+    console.log('Incoming request:', request.method, request.originalUrl);
+    console.log('Request Body:', request.body);
 
     // Validate the incoming request
     const { error } = signInValidation().validate(request.body); 
@@ -67,8 +67,8 @@ app.post('/sign-up', limiter,
     body('phoneNumber').trim().optional().escape().isMobilePhone().withMessage('Valid phone number is required')
 ], 
 async (request, response) => {
-    // console.log('Incoming request:', request.method, request.originalUrl);
-    // console.log('Request Body:', request.body);
+    console.log('Incoming request:', request.method, request.originalUrl);
+    console.log('Request Body:', request.body);
 
      // Validate the incoming request
      const errors = validationResult(request);
@@ -87,9 +87,9 @@ async (request, response) => {
     await signUpController(request, response);
 });
 
-// app.post('/register-passkey', logIncomingRequest, limiter, passkeyController.registerPasskey);
-// app.post('/verify-passkey', logIncomingRequest, limiter, passkeyController.verifyPasskey);
-// app.post('/authenticate-passkey', logIncomingRequest, limiter, authenticatePasskeyController.authenticatePasskey);
+app.post('/register-passkey', logIncomingRequest, limiter, passkeyController.registerPasskey);
+app.post('/verify-passkey', logIncomingRequest, limiter, passkeyController.verifyPasskey);
+app.post('/authenticate-passkey', logIncomingRequest, limiter, authenticatePasskeyController.authenticatePasskey);
 
 app.get('/generate-challenge',  challengeController);
 
