@@ -8,7 +8,32 @@ const sequelize = require('./config/database');
 
 //Configuration
 const app = express();
-app.use(cors());
+// app.use(cors());
+
+
+const allowedOrigins = [process.env.FRONTEND_URL, process.env.FRONTEND_URL_DEPLOYED];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (allowedOrigins.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+}));
+
+// Block postman requests
+
+// app.use((request, response, next) => {
+//     const userAgent = request.headers['user-agent'];
+//     if (userAgent.includes('Postman')) {
+//       return response.status(403).send('Requests from Postman are not allowed.');
+//     }
+//     next();
+//   });
+  
+
 app.use(express.json());
 
 // Rate limiting
@@ -20,6 +45,8 @@ const logIncomingRequest = require('./middlewares/incomingRequests');
 // Validations
 const signInValidation = require('./validations/userValidationsSignIn');
 const signUpValidation = require('./validations/userValidationsSignUp');
+const incomeValidation = require('./validations/incomeValidation');
+const expenseValidation = require('./validations/expenseValidation');
 
 //Controllers
 const signInController = require('./controllers/signInController'); 
@@ -27,6 +54,9 @@ const signUpController = require('./controllers/signUpController');
 const passkeyController = require('./controllers/passkeyController'); 
 const authenticatePasskeyController = require('./controllers/authenticatePasskeyController');
 const challengeController = require('./controllers/challengeController');
+const incomeController = require('./controllers/userIncomeController');
+//Create Income Controller
+// const expenseController = require('./controllers/')
 
 //Check incoming requests
 app.use(logIncomingRequest);
