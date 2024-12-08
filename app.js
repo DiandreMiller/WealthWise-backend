@@ -8,33 +8,6 @@ const sequelize = require('./config/database');
 
 //Configuration
 const app = express();
-// app.use(cors());
-
-
-const allowedOrigins = [process.env.FRONTEND_URL, process.env.FRONTEND_URL_DEPLOYED];
-
-app.use(cors({
-  origin: function (origin, callback) {
-    if (allowedOrigins.includes(origin) || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  }
-}));
-
-// Block postman requests
-
-// app.use((request, response, next) => {
-//     const userAgent = request.headers['user-agent'];
-//     if (userAgent.includes('Postman')) {
-//       return response.status(403).send('Requests from Postman are not allowed.');
-//     }
-//     next();
-//   });
-  
-
-app.use(express.json());
 
 // Rate limiting
 const limiter = require('./middlewares/rateLimiters'); 
@@ -42,11 +15,53 @@ const limiter = require('./middlewares/rateLimiters');
 // Incoming request logging
 const logIncomingRequest = require('./middlewares/incomingRequests');
 
+//Global Limiters 
+//Should I do global limiters?
+// app.use(limiter);
+
+
+const allowedOrigins = [process.env.FRONTEND_URL_LOCAL, process.env.FRONTEND_URL_DEPLOYED];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (allowedOrigins.includes(origin) || !origin) {
+      callback(null, true); 
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+}));
+
+// Block's API Testing Tools
+
+app.use((request, response, next) => {
+    const userAgent = request.headers['user-agent'];
+    
+    const blockedAgents = ['Postman', 'Insomnia', 'Paw', 'Swagger', 'curl', 'HTTPie', 
+        'Apigee', 'Rest-Assured', 'JMeter', 'Karate DSL', 'Tavern', 'Hoppscotch', 
+    'Newman', 'Assertible', 'TestMace', 'Beeceptor', 'API Fortress', 'Runscope'];
+    
+    if (blockedAgents.some(agent => userAgent && userAgent.includes(agent))) {
+        return response.status(403).send('Requests from API testing tools are not allowed.');
+    }
+    
+    next();
+});
+
+  
+
+app.use(express.json());
+
+
+
+
+
 // Validations
 const signInValidation = require('./validations/userValidationsSignIn');
 const signUpValidation = require('./validations/userValidationsSignUp');
 const incomeValidation = require('./validations/incomeValidation');
 const expenseValidation = require('./validations/expenseValidation');
+const budgetValidation = require('./validations/budgetValidation');
 
 //Controllers
 const signInController = require('./controllers/signInController'); 
@@ -55,26 +70,26 @@ const passkeyController = require('./controllers/passkeyController');
 const authenticatePasskeyController = require('./controllers/authenticatePasskeyController');
 const challengeController = require('./controllers/challengeController');
 const incomeController = require('./controllers/userIncomeController');
-//Create Income Controller
-// const expenseController = require('./controllers/')
+const expenseController = require('./controllers/expenseController');
+const budgetController = require('./controllers/budgetController');
 
 //Check incoming requests
 app.use(logIncomingRequest);
 
 //Routes
 app.get('/', (request, response) => {
-    response.send('Welcome to my iCapital Financial Planner App');
+    response.send('Welcome Wealth Wise. Your Ultimate Financial App.');
 });
 
 // Rate limiting and validation middleware to routes
-app.post('/sign-in', limiter,
+app.post('/sign-in', 
     [
         body('identifier').trim().escape().notEmpty().withMessage('Email, username, or phone number is required'),
         body('password').trim().escape().notEmpty().withMessage('Password is required')
     ], 
     async (request, response) => {
-    console.log('Incoming request:', request.method, request.originalUrl);
-    console.log('Request Body:', request.body);
+    // console.log('Incoming request:', request.method, request.originalUrl);
+    // console.log('Request Body:', request.body);
 
     // Validate the incoming request
     const { error } = signInValidation().validate(request.body); 
@@ -117,9 +132,39 @@ async (request, response) => {
     await signUpController(request, response);
 });
 
-app.post('/register-passkey', logIncomingRequest, limiter, passkeyController.registerPasskey);
-app.post('/verify-passkey', logIncomingRequest, limiter, passkeyController.verifyPasskey);
-app.post('/authenticate-passkey', logIncomingRequest, limiter, authenticatePasskeyController.authenticatePasskey);
+//Create Income
+app.post('/users/:userId/income', logIncomingRequest, incomeValidation, limiter, incomeController.createIncome);
+//Get User Income
+app.get('/users/:userId/income', logIncomingRequest, limiter, incomeController.getUserIncome);
+//Update Income
+app.put('/users/:userId/income/:id', logIncomingRequest, incomeValidation, limiter, incomeController.updateIncome);
+//Delete Income
+app.delete('/users/:userId/income/:id', logIncomingRequest, limiter, incomeController.deleteIncome);
+
+
+//Create Expense 
+app.post('/users/:userId/expenses', logIncomingRequest, expenseValidation, limiter, expenseController.createExpense);
+//Get User Income
+app.get('/users/:userId/expenses', logIncomingRequest, limiter, expenseController.getUserExpenses);
+//Update Income
+app.put('/users/:userId/expenses/:id', logIncomingRequest, incomeValidation, limiter, incomeController.updateIncome);
+//Delete Income
+app.delete('/users/:userId/expenses/:id', logIncomingRequest, limiter, incomeController.deleteIncome);
+
+
+//Create Budget
+app.post('/users/:userId/budget', logIncomingRequest, limiter, budgetValidation, limiter, budgetController.createBudget);
+//Get User Budget
+app.get('/users/:userId/budget', logIncomingRequest, limiter, budgetController.getBudgetByUser);
+//Update User Budget
+app.put('/users/:userId/budget/:id', logIncomingRequest, budgetValidation, limiter, budgetController.updateBudget);
+//Delete Budget
+app.delete('/users/:userId/budget/:id', logIncomingRequest, limiter, budgetController.deleteBudget);
+
+
+app.post('/register-passkey', logIncomingRequest, passkeyController.registerPasskey);
+app.post('/verify-passkey', logIncomingRequest, passkeyController.verifyPasskey);
+app.post('/authenticate-passkey', logIncomingRequest, authenticatePasskeyController.authenticatePasskey);
 
 app.get('/generate-challenge',  challengeController);
 
