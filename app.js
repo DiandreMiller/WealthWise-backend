@@ -19,6 +19,9 @@ const logIncomingRequest = require('./middlewares/incomingRequests');
 //Should I do global limiters?
 // app.use(limiter);
 
+const Expense = require('./models/expenseModel');
+const User = require('./models/userModels');
+
 
 const allowedOrigins = [process.env.FRONTEND_URL_LOCAL, process.env.FRONTEND_URL_DEPLOYED];
 
@@ -34,24 +37,46 @@ app.use(cors({
 
 // Block's API Testing Tools
 
-app.use((request, response, next) => {
-    const userAgent = request.headers['user-agent'];
+// app.use((request, response, next) => {
+//     const userAgent = request.headers['user-agent'];
     
-    const blockedAgents = ['Postman', 'Insomnia', 'Paw', 'Swagger', 'curl', 'HTTPie', 
-        'Apigee', 'Rest-Assured', 'JMeter', 'Karate DSL', 'Tavern', 'Hoppscotch', 
-    'Newman', 'Assertible', 'TestMace', 'Beeceptor', 'API Fortress', 'Runscope'];
+//     const blockedAgents = ['Postman', 'Insomnia', 'Paw', 'Swagger', 'curl', 'HTTPie', 
+//         'Apigee', 'Rest-Assured', 'JMeter', 'Karate DSL', 'Tavern', 'Hoppscotch', 
+//     'Newman', 'Assertible', 'TestMace', 'Beeceptor', 'API Fortress', 'Runscope'];
     
-    if (blockedAgents.some(agent => userAgent && userAgent.includes(agent))) {
-        return response.status(403).send('Requests from API testing tools are not allowed.');
-    }
+//     if (blockedAgents.some(agent => userAgent && userAgent.includes(agent))) {
+//         return response.status(403).send('Requests from API testing tools are not allowed.');
+//     }
     
-    next();
-});
+//     next();
+// });
 
   
 
-app.use(express.json());
+// app.use(express.json()); // it messes up get requests
+app.use((request, response, next) => {
+    if (['POST', 'PUT', 'PATCH'].includes(request.method)) {
+        express.json()(request, response, next); 
+    } else {
+        next();  
+    }
+});
 
+
+
+// Logs all registered routes
+app._router.stack.forEach((middleware) => {
+    if (middleware.route) {
+        console.log('middleware logs app.js',middleware.route.path); 
+    }
+});
+
+//Log one:
+
+app.use((request, response, next) => {
+    console.log(`Incoming Request - Method: ${request.method}, URL: ${request.url}`);
+    next();
+});
 
 
 
@@ -143,23 +168,67 @@ app.delete('/users/:userId/income/:id', logIncomingRequest, limiter, incomeContr
 
 
 //Create Expense 
-app.post('/users/:userId/expenses', logIncomingRequest, expenseValidation, limiter, expenseController.createExpense);
+app.post('/users/:user_id/expenses', logIncomingRequest, limiter, expenseController.createExpense);
 //Get User Income
-app.get('/users/:userId/expenses', logIncomingRequest, limiter, expenseController.getUserExpenses);
+// app.get('/users/:user_id/expenses', logIncomingRequest, limiter, expenseController.getUserExpenses);
+app.get('/users/:user_id/expenses', async (request, response) => {
+    const userId = request.params.user_id;
+    try {
+      const expenses = await Expense.findAll({
+        where: { user_id: userId },
+        include: {
+          model: User,
+          where: { id: userId },
+          required: true,
+        },
+      });
+      response.json(expenses);
+    } catch (error) {
+      console.error('Error fetching expenses:', error);
+      response.status(500).json({ message: 'Failed to fetch expenses' });
+    }
+  });
+  
 //Update Income
-app.put('/users/:userId/expenses/:id', logIncomingRequest, incomeValidation, limiter, incomeController.updateIncome);
+app.put('/users/:userId/expenses/:id', logIncomingRequest, incomeValidation, limiter, expenseController.updateExpense);
 //Delete Income
-app.delete('/users/:userId/expenses/:id', logIncomingRequest, limiter, incomeController.deleteIncome);
+app.delete('/users/:userId/expenses/:id', logIncomingRequest, limiter, expenseController.deleteExpense);
+
+app.use((req, res, next) => {
+    console.log('Raw Request Body:', req.body);
+    next();
+});
 
 
-//Create Budget
-app.post('/users/:userId/budget', logIncomingRequest, limiter, budgetValidation, limiter, budgetController.createBudget);
+//Budget Routes all working without validations
+//Create Budget --
+app.post('/users/:user_id/budget', logIncomingRequest, limiter, async (request, response) => {
+    try {
+        console.log('Request Body:', request.body); 
+        console.log('Request Params:', request.params); 
+    
+        // Add `user_id` from route params to the request body
+        // const budgeting = { ...request.body, user_id: request.params.userId };
+        const budgeting = { ...request.body, user_id: request.params.user_id };
+        console.log('test:', budgeting.user_id);
+
+        // Validate the combined object
+        const validatedBudget = budgetValidation(budgeting);
+
+        // Proceed to the controller if validation passes
+        await budgetController.createBudget( request, response);
+    } catch (error) {
+        console.error('Budget creation error:', error.message);
+        response.status(400).json({ message: error.message });
+    }
+});
+
 //Get User Budget
 app.get('/users/:userId/budget', logIncomingRequest, limiter, budgetController.getBudgetByUser);
 //Update User Budget
-app.put('/users/:userId/budget/:id', logIncomingRequest, budgetValidation, limiter, budgetController.updateBudget);
+app.put('/users/:userId/budget/:budgetId', logIncomingRequest, limiter, budgetController.updateBudget);
 //Delete Budget
-app.delete('/users/:userId/budget/:id', logIncomingRequest, limiter, budgetController.deleteBudget);
+app.delete('/users/:userId/budget/:budgetId', logIncomingRequest, limiter, budgetController.deleteBudget);
 
 
 app.post('/register-passkey', logIncomingRequest, passkeyController.registerPasskey);

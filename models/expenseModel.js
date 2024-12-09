@@ -1,17 +1,23 @@
 const { Model, DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
+const User = require('./userModels');
+
 
 class Expense extends Model {}
 
 Expense.init({
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         primaryKey: true,
-        autoIncrement: true,
+        defaultValue: DataTypes.UUIDV4,
     },
     user_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         allowNull: false,
+        references: {
+            model: User, 
+            key: 'id',
+          },
     },
     amount: {
         type: DataTypes.DECIMAL(10, 2),
@@ -33,5 +39,14 @@ Expense.init({
     createdAt: 'created_at',
     updatedAt: false, 
 });
+
+Expense.belongsTo(User, { foreignKey: 'user_id' });
+
+
+// Expense.belongsTo(User, {
+//     foreignKey: 'user_id',
+//     as: 'user', 
+//   });
+
 
 module.exports = Expense;

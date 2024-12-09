@@ -1,17 +1,19 @@
 const { Model, DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
+const User = require('./userModels')
 
 class Budget extends Model {}
 
 Budget.init({
     budget_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         primaryKey: true,
-        autoIncrement: true,
+        defaultValue: DataTypes.UUIDV4,
     },
     user_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         allowNull: false,
+        field: 'user_id'
     },
     monthly_income_goal: {
         type: DataTypes.DECIMAL(10, 2),
@@ -41,5 +43,8 @@ Budget.init({
     createdAt: 'created_at',
     updatedAt: false, 
 });
+
+Budget.belongsTo(User, { as: 'user', foreignKey: 'user_id'});
+User.hasMany(Budget, { foreignKey: 'user_id' });
 
 module.exports = Budget;

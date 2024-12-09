@@ -1,16 +1,25 @@
 const Joi = require('joi');
 
 function userBudget(budgeting) {
+    console.log('Budgeting object being validated:', budgeting);
+    const { user_id } = budgeting; 
+    console.log('Extracted user_id:', user_id);
     const schema = Joi.object({
-        //Consider if it needs to be required
-        budget: Joi.number().positive().required()
+        // user_id: Joi.string().guid({ version: 'uuidv4' }).required(), 
+        user_id: Joi.string().uuid().required(),
+        monthly_income_goal: Joi.number().positive().required(),
+        monthly_expense_goal: Joi.number().positive().required(),
+        actual_income: Joi.number().positive().required(),
+        actual_expenses: Joi.number().positive().required(),
+        disposable_income: Joi.number().positive().optional(),
     });
 
     const { error, value } = schema.validate(budgeting);
     if (error) {
+        console.log('error: budget validation:', error.details[0].message);
         throw new Error(error.details[0].message);
     }
-    return value; 
+    return value;
 }
 
 module.exports = userBudget;
