@@ -1,5 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
+const User = require('./userModels');
 
 class Income extends Model {}
 
@@ -50,5 +51,7 @@ Income.init({
     tableName: 'income',     
     timestamps: false,       
 });
+
+Income.belongsTo(User, { foreignKey: 'user_id' });
 
 module.exports = Income;

@@ -20,7 +20,8 @@ const getUserIncome = async (request, response) => {
 
 
 const createIncome = async (request, response) => {
-    const { user_id, amount, source, date_received } = request.body;
+    const { user_id } = request.params;
+    const { amount, source, date_received } = request.body;
 
     try {
         const newIncome = await Income.create({ user_id, amount, source, date_received });
