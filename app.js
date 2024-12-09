@@ -170,8 +170,7 @@ app.delete('/users/:userId/income/:id', logIncomingRequest, limiter, incomeContr
 //Create Expense 
 app.post('/users/:user_id/expenses', logIncomingRequest, limiter, expenseController.createExpense);
 //Get User Income
-// app.get('/users/:user_id/expenses', logIncomingRequest, limiter, expenseController.getUserExpenses);
-app.get('/users/:user_id/expenses', async (request, response) => {
+app.get('/users/:user_id/expenses', logIncomingRequest, limiter, async (request, response) => {
     const userId = request.params.user_id;
     try {
       const expenses = await Expense.findAll({
@@ -190,7 +189,7 @@ app.get('/users/:user_id/expenses', async (request, response) => {
   });
   
 //Update Income
-app.put('/users/:userId/expenses/:id', logIncomingRequest, incomeValidation, limiter, expenseController.updateExpense);
+app.put('/users/:userId/expenses/:id', logIncomingRequest, limiter, expenseController.updateExpense);
 //Delete Income
 app.delete('/users/:userId/expenses/:id', logIncomingRequest, limiter, expenseController.deleteExpense);
 
