@@ -21,6 +21,7 @@ const logIncomingRequest = require('./middlewares/incomingRequests');
 
 const Expense = require('./models/expenseModel');
 const User = require('./models/userModels');
+const Income = require('./models/incomeModel');
 
 
 const allowedOrigins = [process.env.FRONTEND_URL_LOCAL, process.env.FRONTEND_URL_DEPLOYED];
@@ -158,11 +159,31 @@ async (request, response) => {
 });
 
 //Create Income
-app.post('/users/:userId/income', logIncomingRequest, incomeValidation, limiter, incomeController.createIncome);
+app.post('/users/:user_id/income', logIncomingRequest, limiter, incomeController.createIncome);
 //Get User Income
-app.get('/users/:userId/income', logIncomingRequest, limiter, incomeController.getUserIncome);
+// app.get('/users/:user_id/income', logIncomingRequest, limiter, incomeController.getUserIncome);
+app.get('/users/:user_id/income', logIncomingRequest, limiter, async (request, response) => {
+    const userId = request.params.user_id;
+
+    try {
+        const incomeRecords = await Income.findAll({
+            where: { user_id: userId },
+            include: {
+                model: User,
+                where: { id: userId },
+                required: true,
+            },
+        });
+
+        response.json(incomeRecords);
+    } catch (error) {
+        console.error('Error fetching income records:', error);
+        response.status(500).json({ message: 'Failed to fetch income records' });
+    }
+});
+
 //Update Income
-app.put('/users/:userId/income/:id', logIncomingRequest, incomeValidation, limiter, incomeController.updateIncome);
+app.put('/users/:userId/income/:id', logIncomingRequest, limiter, incomeController.updateIncome);
 //Delete Income
 app.delete('/users/:userId/income/:id', logIncomingRequest, limiter, incomeController.deleteIncome);
 
