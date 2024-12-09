@@ -5,9 +5,9 @@ class Income extends Model {}
 
 Income.init({
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         primaryKey: true,
-        autoIncrement: true,
+        defaultValue: DataTypes.UUIDV4,
     },
     user_id: {
         type: DataTypes.UUID,

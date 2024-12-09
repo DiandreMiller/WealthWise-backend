@@ -4,11 +4,16 @@ const User = require('../models/userModels');
 
 const getUserExpenses = async (request, response) => {
     const { userId } = request.params;
+    console.log('expense userId:', userId);
 
     try {
         const expenses = await Expense.findAll({
             where: { user_id: userId },
-            include: { model: User, as: 'user', attributes: ['username', 'email'] },
+            include: {
+                model: User, 
+                as: 'user',
+                attributes: ['username', 'email'],
+            },
         });
 
         response.status(200).json(expenses);
@@ -20,7 +25,10 @@ const getUserExpenses = async (request, response) => {
 
 
 const createExpense = async (request, response) => {
-    const { user_id, amount, category, date_incurred } = request.body;
+    const { user_id } = request.params
+    console.log('Create Expense user_id:', request.params.user_id);
+
+    const { amount, category, date_incurred } = request.body;
 
     try {
         const newExpense = await Expense.create({

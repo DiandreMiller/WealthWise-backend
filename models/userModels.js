@@ -1,6 +1,8 @@
 const { Model, DataTypes } = require('sequelize');
 const { v4: uuidv4 } = require('uuid');
 const { sequelize } = require('../config/database');
+// const Expense = require('./expenseModel');
+// console.log('user expense:', Expense);
 
 class User extends Model {}
 
@@ -92,5 +94,8 @@ User.init({
     createdAt: 'created_at', 
     updatedAt: 'updated_at'   
 });
+
+// User.hasMany(Expense, { foreignKey: 'user_id' });
+
 
 module.exports = User;

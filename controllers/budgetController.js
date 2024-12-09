@@ -1,9 +1,11 @@
 const Budget = require('../models/budgetModel');
 const User = require('../models/userModels');
+// const userbudget = require('../validations/budgetValidation');
 
 
 const getBudgetByUser = async (request, response) => {
     const { userId } = request.params;
+    console.log('userId: budget controller', userId);
 
     try {
         const budget = await Budget.findOne({
@@ -24,9 +26,13 @@ const getBudgetByUser = async (request, response) => {
 
 
 const createBudget = async (request, response) => {
-    const { user_id, monthly_income_goal, monthly_expense_goal, actual_income, actual_expenses } = request.body;
+    console.log('Inside createBudget function');
+    const user_id = request.params.user_id;
+    console.log('userid create budget:', user_id);
+    const { monthly_income_goal, monthly_expense_goal, actual_income, actual_expenses } = request.body;
 
     try {
+        
         const newBudget = await Budget.create({
             user_id,
             monthly_income_goal,
@@ -34,6 +40,7 @@ const createBudget = async (request, response) => {
             actual_income,
             actual_expenses,
         });
+        console.log('New Budget Created:', newBudget);
 
         response.status(201).json(newBudget);
     } catch (error) {
@@ -44,11 +51,19 @@ const createBudget = async (request, response) => {
 
 
 const updateBudget = async (request, response) => {
-    const { budgetId } = request.params;
+    const { userId, budgetId } = request.params;
+    console.log('userID updated Budget:', userId);
+    console.log('budgetId updated Budget:', budgetId);
     const { monthly_income_goal, monthly_expense_goal, actual_income, actual_expenses } = request.body;
 
     try {
-        const budget = await Budget.findByPk(budgetId);
+
+        const budget = await Budget.findOne({
+            where: {
+                budget_id: budgetId,
+                user_id: userId,
+            },
+        });
 
         if (!budget) {
             return response.status(404).json({ message: 'Budget not found' });
