@@ -23,18 +23,13 @@ const Expense = require('./models/expenseModel');
 const User = require('./models/userModels');
 const Income = require('./models/incomeModel');
 
-
-const allowedOrigins = [process.env.FRONTEND_URL_LOCAL, process.env.FRONTEND_URL_DEPLOYED];
-
-app.use(cors({
-  origin: function (origin, callback) {
-    if (allowedOrigins.includes(origin) || !origin) {
-      callback(null, true); 
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
+var corsOptions = {
+    origin: process.env.NODE_ENV === "production" ? process.env.FRONTEND_URL_DEPLOYED : process.env.FRONTEND_URL_LOCAL,
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
   }
-}));
+// const allowedOrigins = [process.env.FRONTEND_URL_DEPLOYED];
+
+app.use(cors(corsOptions));
 
 // Block's API Testing Tools
 app.use((request, response, next) => {
