@@ -67,6 +67,10 @@ You’ll need to create a .env file in the root directory with the following val
     EMAIL_PORT=2525
     EMAIL_USER=your_email_username
     EMAIL_PASS=your_email_password
+    EXPECTED_ORIGIN=http://localhost:5173
+    EXPECTED_RPID=localhost
+    FRONTEND_URL_LOCAL=http://localhost:5173
+
 
 4. Run the PostgreSQL migrations:
     ```bash
