@@ -46,7 +46,7 @@ Make sure you have the following installed:
 
    ```bash
    git clone https://github.com/yourusername/budgeting-investment-backend.git
-   cd budgeting-investment-backend
+   cd icapital-financial-planner-backend
 
 2. Install all the dependencies:
    ```bash
