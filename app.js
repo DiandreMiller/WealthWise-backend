@@ -9,6 +9,14 @@ const sequelize = require('./config/database');
 //Configuration
 const app = express();
 
+//Cors Policy
+var corsOptions = {
+    origin: process.env.NODE_ENV === "production" ? process.env.FRONTEND_URL_DEPLOYED : process.env.FRONTEND_URL_LOCAL,
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+  }
+// const allowedOrigins = [process.env.FRONTEND_URL_DEPLOYED];
+
+app.use(cors(corsOptions));
 // Rate limiting
 const limiter = require('./middlewares/rateLimiters'); 
 
@@ -23,13 +31,7 @@ const Expense = require('./models/expenseModel');
 const User = require('./models/userModels');
 const Income = require('./models/incomeModel');
 
-var corsOptions = {
-    origin: process.env.NODE_ENV === "production" ? process.env.FRONTEND_URL_DEPLOYED : process.env.FRONTEND_URL_LOCAL,
-    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-  }
-// const allowedOrigins = [process.env.FRONTEND_URL_DEPLOYED];
 
-app.use(cors(corsOptions));
 
 // Block's API Testing Tools
 app.use((request, response, next) => {
