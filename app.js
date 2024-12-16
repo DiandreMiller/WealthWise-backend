@@ -38,19 +38,19 @@ app.use(cors({
 
 // Block's API Testing Tools
 
-// app.use((request, response, next) => {
-//     const userAgent = request.headers['user-agent'];
+app.use((request, response, next) => {
+    const userAgent = request.headers['user-agent'];
     
-//     const blockedAgents = ['Postman', 'Insomnia', 'Paw', 'Swagger', 'curl', 'HTTPie', 
-//         'Apigee', 'Rest-Assured', 'JMeter', 'Karate DSL', 'Tavern', 'Hoppscotch', 
-//     'Newman', 'Assertible', 'TestMace', 'Beeceptor', 'API Fortress', 'Runscope'];
+    const blockedAgents = ['Postman', 'Insomnia', 'Paw', 'Swagger', 'curl', 'HTTPie', 
+        'Apigee', 'Rest-Assured', 'JMeter', 'Karate DSL', 'Tavern', 'Hoppscotch', 
+    'Newman', 'Assertible', 'TestMace', 'Beeceptor', 'API Fortress', 'Runscope'];
     
-//     if (blockedAgents.some(agent => userAgent && userAgent.includes(agent))) {
-//         return response.status(403).send('Requests from API testing tools are not allowed.');
-//     }
+    if (blockedAgents.some(agent => userAgent && userAgent.includes(agent))) {
+        return response.status(403).send('Requests from API testing tools are not allowed.');
+    }
     
-//     next();
-// });
+    next();
+});
 
   
 
@@ -98,6 +98,7 @@ const challengeController = require('./controllers/challengeController');
 const incomeController = require('./controllers/userIncomeController');
 const expenseController = require('./controllers/expenseController');
 const budgetController = require('./controllers/budgetController');
+const userController = require('./controllers/userController');
 
 //Check incoming requests
 app.use(logIncomingRequest);
@@ -158,11 +159,28 @@ async (request, response) => {
     await signUpController(request, response);
 });
 
+//Get One User
+app.get('/users/:id', async (request, response) => {
+    const userId = request.params.id;
+    try {
+        const user = await User.findByPk(userId, {
+            attributes: { exclude: ['password'] }, 
+        });
+        if (!user) {
+            return response.status(404).json({ message: 'User not found' });
+        }
+        response.status(200).json(user);
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        response.status(500).json({ message: 'Failed to fetch user' });
+    }
+});
+
 //Create Income
-app.post('/users/:user_id/income', logIncomingRequest, limiter, incomeController.createIncome);
+app.post('/users/:user_id/income', logIncomingRequest, incomeController.createIncome);
 //Get User Income
 // app.get('/users/:user_id/income', logIncomingRequest, limiter, incomeController.getUserIncome);
-app.get('/users/:user_id/income', logIncomingRequest, limiter, async (request, response) => {
+app.get('/users/:user_id/income', logIncomingRequest, async (request, response) => {
     const userId = request.params.user_id;
 
     try {
@@ -183,15 +201,15 @@ app.get('/users/:user_id/income', logIncomingRequest, limiter, async (request, r
 });
 
 //Update Income
-app.put('/users/:userId/income/:id', logIncomingRequest, limiter, incomeController.updateIncome);
+app.put('/users/:userId/income/:id', logIncomingRequest, incomeController.updateIncome);
 //Delete Income
-app.delete('/users/:userId/income/:id', logIncomingRequest, limiter, incomeController.deleteIncome);
+app.delete('/users/:userId/income/:id', logIncomingRequest, incomeController.deleteIncome);
 
 
 //Create Expense 
-app.post('/users/:user_id/expenses', logIncomingRequest, limiter, expenseController.createExpense);
+app.post('/users/:user_id/expenses', logIncomingRequest, expenseController.createExpense);
 //Get User Income
-app.get('/users/:user_id/expenses', logIncomingRequest, limiter, async (request, response) => {
+app.get('/users/:user_id/expenses', logIncomingRequest, async (request, response) => {
     const userId = request.params.user_id;
     try {
       const expenses = await Expense.findAll({
@@ -210,9 +228,9 @@ app.get('/users/:user_id/expenses', logIncomingRequest, limiter, async (request,
   });
   
 //Update Income
-app.put('/users/:userId/expenses/:id', logIncomingRequest, limiter, expenseController.updateExpense);
+app.put('/users/:userId/expenses/:id', logIncomingRequest, expenseController.updateExpense);
 //Delete Income
-app.delete('/users/:userId/expenses/:id', logIncomingRequest, limiter, expenseController.deleteExpense);
+app.delete('/users/:userId/expenses/:id', logIncomingRequest, expenseController.deleteExpense);
 
 app.use((req, res, next) => {
     console.log('Raw Request Body:', req.body);
@@ -222,7 +240,7 @@ app.use((req, res, next) => {
 
 //Budget Routes all working without validations
 //Create Budget --
-app.post('/users/:user_id/budget', logIncomingRequest, limiter, async (request, response) => {
+app.post('/users/:user_id/budget', logIncomingRequest, async (request, response) => {
     try {
         console.log('Request Body:', request.body); 
         console.log('Request Params:', request.params); 
@@ -244,11 +262,11 @@ app.post('/users/:user_id/budget', logIncomingRequest, limiter, async (request, 
 });
 
 //Get User Budget
-app.get('/users/:userId/budget', logIncomingRequest, limiter, budgetController.getBudgetByUser);
+app.get('/users/:userId/budget', logIncomingRequest, budgetController.getBudgetByUser);
 //Update User Budget
-app.put('/users/:userId/budget/:budgetId', logIncomingRequest, limiter, budgetController.updateBudget);
+app.put('/users/:userId/budget/:budgetId', logIncomingRequest, budgetController.updateBudget);
 //Delete Budget
-app.delete('/users/:userId/budget/:budgetId', logIncomingRequest, limiter, budgetController.deleteBudget);
+app.delete('/users/:userId/budget/:budgetId', logIncomingRequest, budgetController.deleteBudget);
 
 
 app.post('/register-passkey', logIncomingRequest, passkeyController.registerPasskey);
