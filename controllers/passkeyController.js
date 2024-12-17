@@ -20,6 +20,7 @@ exports.registerPasskey = async (request, response) => {
                 [Op.or]: [{ email: identifier }, { username: identifier }]
             }
         });
+        
 
         if (!user) {
             console.log("User not found for identifier:", identifier);
