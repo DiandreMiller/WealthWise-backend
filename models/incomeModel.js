@@ -34,6 +34,33 @@ Income.init({
             notEmpty: true,
         },
     },
+    category: {
+        type: DataTypes.ENUM,
+        values: [
+            'salary', 
+            'rental', 
+            'investments', 
+            'business', 
+            'pension', 
+            'social security', 
+            'royalties', 
+            'government assistance', 
+            'gifts', 
+            'bonus', 
+            'inheritance', 
+            'lottery/gambling', 
+            'gigs', 
+            'asset sales', 
+            'tax refunds', 
+            'severance pay', 
+            'grants/scholarships', 
+            'other'
+        ],
+        allowNull: false,
+        validate: {
+            notEmpty: true,
+        },
+    },
     date_received: {
         type: DataTypes.DATEONLY,
         allowNull: false,
@@ -44,6 +71,10 @@ Income.init({
     created_at: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
+    },
+    is_recurring: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
     },
 }, {
     sequelize,              
