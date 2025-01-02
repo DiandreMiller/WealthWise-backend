@@ -14,7 +14,6 @@ var corsOptions = {
     origin: process.env.NODE_ENV === "production" ? process.env.FRONTEND_URL_DEPLOYED : process.env.FRONTEND_URL_LOCAL,
     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
   }
-// const allowedOrigins = [process.env.FRONTEND_URL_DEPLOYED];
 
 app.use(cors(corsOptions));
 
