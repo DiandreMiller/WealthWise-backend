@@ -21,10 +21,10 @@ const getUserIncome = async (request, response) => {
 
 const createIncome = async (request, response) => {
     const { user_id } = request.params;
-    const { amount, source, date_received } = request.body;
+    const { amount, source, date_received, category, is_recurring } = request.body;
 
     try {
-        const newIncome = await Income.create({ user_id, amount, source, date_received });
+        const newIncome = await Income.create({ user_id, amount, source, date_received, category, is_recurring });
         response.status(201).json(newIncome);
     } catch (error) {
         console.error('Error creating income record:', error);
