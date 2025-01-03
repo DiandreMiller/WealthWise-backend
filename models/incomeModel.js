@@ -34,33 +34,47 @@ Income.init({
             notEmpty: true,
         },
     },
+    // category: {
+    //     type: DataTypes.ENUM,
+    //     values: [
+    //         'salary', 
+    //         'rental', 
+    //         'investments', 
+    //         'business', 
+    //         'pension', 
+    //         'social security', 
+    //         'royalties', 
+    //         'government assistance', 
+    //         'gifts', 
+    //         'bonus', 
+    //         'inheritance', 
+    //         'lottery/gambling', 
+    //         'gigs', 
+    //         'asset sales', 
+    //         'tax refunds', 
+    //         'severance pay', 
+    //         'grants/scholarships', 
+    //         'other'
+    //     ],
+    //     allowNull: false,
+    //     // allowNull: true,
+    //     validate: {
+    //         notEmpty: true,
+    //     },
+    // },
     category: {
-        type: DataTypes.ENUM,
-        values: [
-            'salary', 
-            'rental', 
-            'investments', 
-            'business', 
-            'pension', 
-            'social security', 
-            'royalties', 
-            'government assistance', 
-            'gifts', 
-            'bonus', 
-            'inheritance', 
-            'lottery/gambling', 
-            'gigs', 
-            'asset sales', 
-            'tax refunds', 
-            'severance pay', 
-            'grants/scholarships', 
-            'other'
-        ],
-        allowNull: false,
+        type: DataTypes.STRING,
+        allowNull: true,
         validate: {
-            notEmpty: true,
+            isValidCategory(value) {
+                if (value && !['salary', 'rental', 'investments', 'business', 'pension', 'social security', 'royalties', 'government assistance', 'gifts', 'bonus', 'inheritance', 'lottery/gambling', 'gigs', 'asset sales', 'tax refunds', 'severance pay', 'grants/scholarships', 'other'].includes(value)) {
+                    throw new Error('Invalid category value');
+                }
+            },
         },
     },
+    
+    
     date_received: {
         type: DataTypes.DATEONLY,
         allowNull: false,
