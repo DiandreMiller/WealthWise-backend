@@ -35,7 +35,7 @@ const createIncome = async (request, response) => {
 
 const updateIncome = async (request, response) => {
     const { id } = request.params;
-    const { amount, source, date_received } = request.body;
+    const { amount, source, date_received, category, is_recurring } = request.body;
 
     try {
         const income = await Income.findByPk(id);
@@ -47,6 +47,8 @@ const updateIncome = async (request, response) => {
         income.amount = amount || income.amount;
         income.source = source || income.source;
         income.date_received = date_received || income.date_received;
+        income.category = category || income.category;
+        income.is_recurring = is_recurring || income.is_recurring;
 
         await income.save();
         response.status(200).json(income);
