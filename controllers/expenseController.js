@@ -28,7 +28,7 @@ const createExpense = async (request, response) => {
     const { user_id } = request.params
     console.log('Create Expense user_id:', request.params.user_id);
 
-    const { amount, category, date_incurred, category_type } = request.body;
+    const { amount, category, date_incurred, category_type, is_recurring } = request.body;
 
     try {
         const newExpense = await Expense.create({
@@ -37,6 +37,7 @@ const createExpense = async (request, response) => {
             category,
             date_incurred,
             category_type,
+            is_recurring
         });
 
         response.status(201).json(newExpense);
@@ -48,7 +49,7 @@ const createExpense = async (request, response) => {
 
 const updateExpense = async (request, response) => {
     const { id } = request.params;
-    const { amount, category, date_incurred, category_type } = request.body;
+    const { amount, category, date_incurred, category_type, is_recurring } = request.body;
 
     try {
         const expense = await Expense.findByPk(id);
@@ -62,6 +63,7 @@ const updateExpense = async (request, response) => {
         expense.category = category ?? expense.category;
         expense.date_incurred = date_incurred ?? expense.date_incurred;
         expense.category_type = category_type ?? expense.category_type;
+        expense.is_recurring = is_recurring ?? expense.is_recurring;
 
         await expense.save();
         response.status(200).json(expense);
