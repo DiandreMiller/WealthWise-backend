@@ -63,6 +63,10 @@ Expense.init({
         type: DataTypes.DATEONLY,
         allowNull: false,
     },
+    is_recurring: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
 }, {
     sequelize,
     modelName: 'Expense',
