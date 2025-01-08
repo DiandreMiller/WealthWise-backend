@@ -26,28 +26,42 @@ const getBudgetByUser = async (request, response) => {
 
 
 const createBudget = async (request, response) => {
-    console.log('Inside createBudget function');
     const user_id = request.params.user_id;
-    console.log('userid create budget:', user_id);
-    const { monthly_income_goal, monthly_expense_goal, actual_income, actual_expenses } = request.body;
+    const {
+        monthly_income_goal,
+        monthly_expense_goal,
+        actual_income,
+        actual_expenses,
+    } = request.body;
+
+    // Validate inputs
+    if (
+        !user_id ||
+        isNaN(parseFloat(monthly_income_goal)) ||
+        isNaN(parseFloat(monthly_expense_goal)) ||
+        (actual_income !== undefined && actual_income !== null && isNaN(parseFloat(actual_income))) ||
+        (actual_expenses !== undefined && actual_expenses !== null && isNaN(parseFloat(actual_expenses)))
+    ) {
+        return response
+            .status(400)
+            .json({ message: 'Invalid input data. Please provide valid numbers or leave fields empty for null values.' });
+    }
 
     try {
-        
         const newBudget = await Budget.create({
             user_id,
-            monthly_income_goal,
-            monthly_expense_goal,
-            actual_income,
-            actual_expenses,
+            monthly_income_goal: parseFloat(monthly_income_goal),
+            monthly_expense_goal: parseFloat(monthly_expense_goal),
+            actual_income: actual_income ? parseFloat(actual_income) : null,
+            actual_expenses: actual_expenses ? parseFloat(actual_expenses) : null,
         });
-        console.log('New Budget Created:', newBudget);
 
         response.status(201).json(newBudget);
     } catch (error) {
-        console.error('Error creating budget:', error);
-        response.status(500).json({ message: 'Failed to create budget' });
+        response.status(500).json({ message: 'Failed to create budget', error: error.message });
     }
 };
+
 
 
 const updateBudget = async (request, response) => {

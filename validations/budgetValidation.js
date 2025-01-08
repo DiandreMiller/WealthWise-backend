@@ -9,8 +9,8 @@ function userBudget(budgeting) {
         user_id: Joi.string().uuid().required(),
         monthly_income_goal: Joi.number().positive().required(),
         monthly_expense_goal: Joi.number().positive().required(),
-        actual_income: Joi.number().positive().required(),
-        actual_expenses: Joi.number().positive().required(),
+        actual_income: Joi.number().min(0).required(),
+        actual_expenses: Joi.number().min(0).required(),
         disposable_income: Joi.number().positive().optional(),
     });
 
