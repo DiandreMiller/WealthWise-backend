@@ -47,6 +47,14 @@ const createBudget = async (request, response) => {
             .json({ message: 'Invalid input data. Please provide valid numbers or leave fields empty for null values.' });
     }
 
+    console.log('Data being inserted into budget:', {
+        user_id,
+        monthly_income_goal: parseFloat(monthly_income_goal),
+        monthly_expense_goal: parseFloat(monthly_expense_goal),
+        actual_income: actual_income ? parseFloat(actual_income) : null,
+        actual_expenses: actual_expenses ? parseFloat(actual_expenses) : null,
+    });
+
     try {
         const newBudget = await Budget.create({
             user_id,
@@ -55,6 +63,7 @@ const createBudget = async (request, response) => {
             actual_income: actual_income ? parseFloat(actual_income) : null,
             actual_expenses: actual_expenses ? parseFloat(actual_expenses) : null,
         });
+        console.log('Successfully inserted budget:', newBudget.toJSON());
 
         response.status(201).json(newBudget);
     } catch (error) {
