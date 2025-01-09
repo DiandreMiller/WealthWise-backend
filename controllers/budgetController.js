@@ -60,8 +60,10 @@ const createBudget = async (request, response) => {
             user_id,
             monthly_income_goal: parseFloat(monthly_income_goal),
             monthly_expense_goal: parseFloat(monthly_expense_goal),
-            actual_income: actual_income ? parseFloat(actual_income) : null,
-            actual_expenses: actual_expenses ? parseFloat(actual_expenses) : null,
+            // actual_income: actual_income ? parseFloat(actual_income) : null,
+            // actual_expenses: actual_expenses ? parseFloat(actual_expenses) : null,
+            actual_income: actual_income !== undefined && actual_income !== null ? parseFloat(actual_income) : 0,
+            actual_expenses: actual_expenses !== undefined && actual_expenses !== null ? parseFloat(actual_expenses) : 0,
         });
         console.log('Successfully inserted budget:', newBudget.toJSON());
 
