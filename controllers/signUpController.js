@@ -36,16 +36,16 @@ async function signUp(request, response) {
         const { username, email, password, dateOfBirth, phoneNumber, webauthnid, webauthnpublickey } = request.body;
 
         // Check if user already exists by email, or username
-        // const existingUser = await User.findOne({
-        //     where: sequelize.or(
-        //         { email: email.toLowerCase() },
-        //         { username },
-        //     )
-        // });
+        const existingUser = await User.findOne({
+            where: sequelize.or(
+                { email: email.toLowerCase() },
+                { username },
+            )
+        });
 
-        // if (existingUser) {
-        //     return response.status(409).json({ error: 'User already exists with this identifier' });
-        // }
+        if (existingUser) {
+            return response.status(409).json({ error: 'User already exists with this identifier' });
+        }
 
         //Check if phone number already exists in database
         const existingPhoneNumber = await User.findOne({
