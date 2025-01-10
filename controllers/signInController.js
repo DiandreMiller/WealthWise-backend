@@ -43,7 +43,8 @@ async function signIn(request, response) {
         if (user.accountLocked) {
             console.log('User account is locked. Checking lockout period...');
             const lockOutEnd = new Date(user.lastFailedLogin);
-            lockOutEnd.setHours(lockOutEnd.getHours() + 6);
+            // lockOutEnd.setHours(lockOutEnd.getHours() + 6);
+            lockOutEnd.setMinutes(lockOutEnd.getMinutes() + 1)
             console.log('Lockout end time:', lockOutEnd.toISOString());
 
             if (new Date() < lockOutEnd) {
