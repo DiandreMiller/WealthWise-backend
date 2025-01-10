@@ -30,6 +30,7 @@ const logIncomingRequest = require('./middlewares/incomingRequests');
 const Expense = require('./models/expenseModel');
 const User = require('./models/userModels');
 const Income = require('./models/incomeModel');
+const Budget = require('./models/budgetModel');
 
 
 
