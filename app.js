@@ -2,6 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const { body, validationResult } = require('express-validator');
+const { validate: validateUuid } = require('uuid'); 
 
 //Database
 const sequelize = require('./config/database');
@@ -30,6 +31,7 @@ const logIncomingRequest = require('./middlewares/incomingRequests');
 const Expense = require('./models/expenseModel');
 const User = require('./models/userModels');
 const Income = require('./models/incomeModel');
+const Budget = require('./models/budgetModel');
 
 
 
@@ -306,12 +308,28 @@ app.get('/users/:userId/budget', logIncomingRequest, budgetController.getBudgetB
 //Get specific user budget
 app.get('/users/:userId/budget/:budgetId', logIncomingRequest, async (request, response) => {
     const { userId, budgetId } = request.params;
+    console.log('Received budgetId:', budgetId, '| Length:', budgetId.length);
+    console.log('Characters:', [...budgetId]);
+
+    if (budgetId.length !== 36) {
+        console.log('Invalid length for budgetId:', budgetId, '| Length:', budgetId.length);
+        return response.status(400).json({ message: 'Invalid budgetId length' });
+    }
+    
+
+    if (!validateUuid(budgetId)) {
+        console.log('Invalid budgetId format:', budgetId);
+        return response.status(400).json({ message: 'Invalid budgetId format' });
+    }
+
     console.log('Fetching budget for userId:', userId, 'budgetId:', budgetId);
 
     try {
         const budget = await Budget.findOne({
             where: { user_id: userId, budget_id: budgetId },
         });
+
+        console.log('Budget Query Result:', budget);
 
         if (!budget) {
             return response.status(404).json({ message: 'Budget not found' });
@@ -323,6 +341,7 @@ app.get('/users/:userId/budget/:budgetId', logIncomingRequest, async (request, r
         response.status(500).json({ message: 'Failed to fetch budget' });
     }
 });
+
 
 //Update User Budget
 app.put('/users/:userId/budget/:budgetId', logIncomingRequest, budgetController.updateBudget);
