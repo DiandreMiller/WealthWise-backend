@@ -94,12 +94,17 @@ const updateBudget = async (request, response) => {
             return response.status(404).json({ message: 'Budget not found' });
         }
 
+        // const updatedActualIncome = actual_income ?? budget.actual_income;
+        // const updatedActualExpenses = actual_expenses ?? budget.actual_expenses;
+
         budget.monthly_income_goal = monthly_income_goal ?? budget.monthly_income_goal;
         budget.monthly_expense_goal = monthly_expense_goal ?? budget.monthly_expense_goal;
         budget.actual_income = actual_income ?? budget.actual_income;
         budget.actual_expenses = actual_expenses ?? budget.actual_expenses;
+        // budget.disposable_income = updatedActualIncome - updatedActualExpenses;
 
         await budget.save(); 
+        console.log("Updated budget:", budget.toJSON());
         response.status(200).json(budget);
     } catch (error) {
         console.error('Error updating budget:', error);
