@@ -302,6 +302,28 @@ app.post('/users/:user_id/budget', logIncomingRequest, async (request, response)
 
 //Get User Budget
 app.get('/users/:userId/budget', logIncomingRequest, budgetController.getBudgetByUser);
+
+//Get specific user budget
+app.get('/users/:userId/budget/:budgetId', logIncomingRequest, async (request, response) => {
+    const { userId, budgetId } = request.params;
+    console.log('Fetching budget for userId:', userId, 'budgetId:', budgetId);
+
+    try {
+        const budget = await Budget.findOne({
+            where: { user_id: userId, budget_id: budgetId },
+        });
+
+        if (!budget) {
+            return response.status(404).json({ message: 'Budget not found' });
+        }
+
+        response.status(200).json(budget);
+    } catch (error) {
+        console.error('Error fetching budget:', error.message);
+        response.status(500).json({ message: 'Failed to fetch budget' });
+    }
+});
+
 //Update User Budget
 app.put('/users/:userId/budget/:budgetId', logIncomingRequest, budgetController.updateBudget);
 //Delete Budget
