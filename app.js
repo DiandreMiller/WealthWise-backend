@@ -141,6 +141,7 @@ const incomeController = require('./controllers/userIncomeController');
 const expenseController = require('./controllers/expenseController');
 const budgetController = require('./controllers/budgetController');
 const userController = require('./controllers/userController');
+const resetPasswordController = require('./controllers/resetPasswordController');
 
 //Check incoming requests
 app.use(logIncomingRequest);
@@ -347,6 +348,43 @@ app.get('/users/:userId/budget/:budgetId', logIncomingRequest, async (request, r
 app.put('/users/:userId/budget/:budgetId', logIncomingRequest, budgetController.updateBudget);
 //Delete Budget
 app.delete('/users/:userId/budget/:budgetId', logIncomingRequest, budgetController.deleteBudget);
+
+
+// Password Reset Request Route
+app.post('/password-reset-request', async (request, response) => {
+    try {
+        const { email } = request.body;
+
+        if (!email) {
+            return response.status(400).json({ error: 'Email is required' });
+        }
+
+        await resetPasswordController.requestPasswordReset(email);
+        response.status(200).json({
+            message: 'If the email exists, a password reset link has been sent.',
+        });
+    } catch (error) {
+        console.error('Error in /password-reset-request:', error.message);
+        response.status(500).json({ error: 'An error occurred while processing the request.' });
+    }
+});
+
+// Reset Password Route
+app.post('/reset-password', async (request, response) => {
+    try {
+        const { token, newPassword } = request.body;
+
+        if (!token || !newPassword) {
+            return response.status(400).json({ error: 'Token and new password are required.' });
+        }
+
+        await resetPasswordController.resetPassword(token, newPassword);
+        response.status(200).json({ message: 'Password reset successfully.' });
+    } catch (error) {
+        console.error('Error in /reset-password:', error.message);
+        response.status(500).json({ error: 'An error occurred while resetting the password.' });
+    }
+});
 
 
 app.post('/register-passkey', logIncomingRequest, passkeyController.registerPasskey);
