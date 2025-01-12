@@ -52,10 +52,12 @@ async function requestPasswordReset (email) {
 
         //Create reset link
         const resetLink = `${process.env.FRONTEND_URL_LOCAL}/reset-password?token=${resetToken}`;
+        const resetLinkDeployed = `${process.env.FRONTEND_URL_DEPLOYED}/reset-password?token=${resetToken}`;
 
         // Send reset email
         const subject = 'Password Reset Request';
-        const text = `Click the link to reset your password: ${resetLink}`;
+        // const text = `Click the link to reset your password: ${resetLink}`;
+        const text = `Click the link to reset your password: ${resetLinkDeployed}`;
         const html = `
         <!DOCTYPE html>
         <html>
@@ -128,7 +130,8 @@ async function requestPasswordReset (email) {
                 <div class="content">
                     <p>Hello,</p>
                     <p>We received a request to reset your password for your WealthWise account. Please click the button below to reset your password:</p>
-                    <a href="${resetLink}" target="_blank">Reset Password</a>
+                    // <a href="${resetLink}" target="_blank">Reset Password</a>
+                    <a href="${resetLinkDeployed}" target="_blank">Reset Password</a>
                     <p>This link will expire in 1 hour. If you did not request this, please ignore this email.</p>
                 </div>
                 <div class="footer">
