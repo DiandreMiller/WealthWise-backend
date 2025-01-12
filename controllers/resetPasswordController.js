@@ -1,6 +1,6 @@
 const sgMail = require('@sendgrid/mail');
 const crypto = require('crypto');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const User = require('../models/userModels');
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
