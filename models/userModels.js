@@ -84,6 +84,16 @@ User.init({
     hasregisteredpasskey: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
+    },
+    resetToken: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        field: 'reset_token',
+    },
+    resetTokenExpires: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'reset_token_expires',
     }
 }, {
     sequelize,              
