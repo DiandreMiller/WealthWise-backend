@@ -280,7 +280,7 @@ app.use((req, res, next) => {
 });
 
 
-//Budget Routes all working without validations
+//Budget Routes all working without validations - investigate why
 //Create Budget --
 app.post('/users/:user_id/budget', logIncomingRequest, async (request, response) => {
     try {
