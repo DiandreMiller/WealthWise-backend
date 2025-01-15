@@ -152,7 +152,7 @@ app.get('/', (request, response) => {
 });
 
 // Rate limiting and validation middleware to routes
-app.post('/sign-in', 
+app.post('/sign-in', limiter,
     [
         body('identifier').trim().escape().notEmpty().withMessage('Email, username, or phone number is required'),
         body('password').trim().escape().notEmpty().withMessage('Password is required')
