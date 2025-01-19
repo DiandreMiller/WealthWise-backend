@@ -87,3 +87,4 @@ You’ll need to create a .env file in the root directory with the following val
 https://www.npmjs.com/package/yahoo-finance2
 
 //Remember to encrypt id
+// look up how facebook uses the user name
