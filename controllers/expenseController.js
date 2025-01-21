@@ -9,11 +9,9 @@ const getUserExpenses = async (request, response) => {
     try {
         const expenses = await Expense.findAll({
             where: { user_id: userId },
-            include: {
-                model: User, 
-                as: 'user',
-                attributes: ['username', 'email'],
-            },
+            include: { model: User, as: 'user', attributes: ['username', 'email'] },
+            order: [['created_at', 'DESC']],
+            logging: console.log,
         });
 
         response.status(200).json(expenses);

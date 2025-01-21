@@ -9,8 +9,11 @@ const getUserIncome = async (request, response) => {
         const incomes = await Income.findAll({
             where: { user_id: userId },
             include: { model: User, as: 'user', attributes: ['username', 'email'] },
+            order: [['created_at', 'DESC']],
+            logging: console.log,
         });
 
+        console.log('Fetched incomes:', incomes);
         response.status(200).json(incomes);
     } catch (error) {
         console.error('Error fetching income records:', error);
