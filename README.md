@@ -45,8 +45,8 @@ Make sure you have the following installed:
 1. First, clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/budgeting-investment-backend.git
-   cd icapital-financial-planner-backend
+   git clone https://github.com/DiandreMiller/WealthWise-backend.git
+   cd WealthWise-backend
 
 2. Install all the dependencies:
    ```bash
