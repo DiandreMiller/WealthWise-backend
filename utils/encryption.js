@@ -21,14 +21,13 @@ function decrypt(encryptedText) {
   return decrypted;
 }
 
-// Example 
-const plainText = 'This is a secret message.';
-const encryptedText = encrypt(plainText);
-const decryptedText = decrypt(encryptedText);
+// const plainText = 'This is a secret message.';
+// const encryptedText = encrypt(plainText);
+// const decryptedText = decrypt(encryptedText);
 
-console.log('Plain text:', plainText);
-console.log('Encrypted text:', encryptedText);
-console.log('Decrypted text:', decryptedText);
+// console.log('Plain text:', plainText);
+// console.log('Encrypted text:', encryptedText);
+// console.log('Decrypted text:', decryptedText);
 
 module.exports = {
     encrypt,
