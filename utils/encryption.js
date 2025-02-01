@@ -1,3 +1,5 @@
+//TODO: Figure out a way to generate a random user id each time the user logs in
+
 const crypto = require('crypto');
 
 const algorithm = 'aes-256-cbc'; 
