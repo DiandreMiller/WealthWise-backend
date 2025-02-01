@@ -1,5 +1,6 @@
 const Income = require('../models/incomeModel');
 const User = require('../models/userModels');
+const security = require('../utils/encryption')
 
 
 const getUserIncome = async (request, response) => {
@@ -24,10 +25,11 @@ const getUserIncome = async (request, response) => {
 
 const createIncome = async (request, response) => {
     const { user_id } = request.params;
+    const decryptedUserId = security.decrypt(user_id);
     const { amount, source, date_received, category, is_recurring } = request.body;
 
     try {
-        const newIncome = await Income.create({ user_id, amount, source, date_received, category, is_recurring });
+        const newIncome = await Income.create({ user_id: decryptedUserId, amount, source, date_received, category, is_recurring });
         response.status(201).json(newIncome);
     } catch (error) {
         console.error('Error creating income record:', error);

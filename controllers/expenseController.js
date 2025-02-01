@@ -1,5 +1,6 @@
 const Expense = require('../models/expenseModel');
 const User = require('../models/userModels');
+const security = require('../utils/encryption');
 
 
 const getUserExpenses = async (request, response) => {
@@ -24,13 +25,14 @@ const getUserExpenses = async (request, response) => {
 
 const createExpense = async (request, response) => {
     const { user_id } = request.params
+    const decryptedUserId = security.decrypt(user_id);
     console.log('Create Expense user_id:', request.params.user_id);
 
     const { amount, category, date_incurred, category_type, is_recurring } = request.body;
 
     try {
         const newExpense = await Expense.create({
-            user_id,
+            user_id: decryptedUserId,
             amount,
             category,
             date_incurred,

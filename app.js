@@ -129,7 +129,7 @@ const signInValidation = require('./validations/userValidationsSignIn');
 const signUpValidation = require('./validations/userValidationsSignUp');
 const incomeValidation = require('./validations/incomeValidation');
 const expenseValidation = require('./validations/expenseValidation');
-const budgetValidation = require('./validations/budgetValidation');
+// const budgetValidation = require('./validations/budgetValidation');
 
 //Controllers
 const signInController = require('./controllers/signInController'); 
@@ -142,6 +142,9 @@ const expenseController = require('./controllers/expenseController');
 const budgetController = require('./controllers/budgetController');
 const userController = require('./controllers/userController');
 const resetPasswordController = require('./controllers/resetPasswordController');
+
+//Security
+const security = require('./utils/encryption')
 
 //Check incoming requests
 app.use(logIncomingRequest);
@@ -204,9 +207,19 @@ async (request, response) => {
 
 //Get One User
 app.get('/users/:id', async (request, response) => {
-    const userId = request.params.id;
+
+   
     try {
-        const user = await User.findByPk(userId, {
+        const encryptedUserId = request.params.id;
+        console.log('encryptedUserId:', encryptedUserId);
+        const decryptedUserId = security.decrypt(encryptedUserId);
+        console.log('decryptedUserId:', decryptedUserId);
+
+        if (!decryptedUserId) {
+            return response.status(400).json({ message: 'Invalid user ID after decryption' });
+        }
+
+        const user = await User.findByPk(decryptedUserId, {
             attributes: { exclude: ['password'] }, 
         });
         if (!user) {
@@ -224,13 +237,14 @@ app.post('/users/:user_id/income', logIncomingRequest, incomeController.createIn
 //Get User Income
 app.get('/users/:user_id/income', logIncomingRequest, async (request, response) => {
     const userId = request.params.user_id;
+    const decryptedUserId = security.decrypt(userId);
 
     try {
         const incomeRecords = await Income.findAll({
-            where: { user_id: userId },
+            where: { user_id: decryptedUserId },
             include: {
                 model: User,
-                where: { id: userId },
+                where: { id: decryptedUserId },
                 required: true,
             },
         });
@@ -253,12 +267,13 @@ app.post('/users/:user_id/expenses', logIncomingRequest, expenseController.creat
 //Get User Income
 app.get('/users/:user_id/expenses', logIncomingRequest, async (request, response) => {
     const userId = request.params.user_id;
+    const decryptedUserId = security.decrypt(userId)
     try {
       const expenses = await Expense.findAll({
-        where: { user_id: userId },
+        where: { user_id: decryptedUserId },
         include: {
           model: User,
-          where: { id: userId },
+          where: { id: decryptedUserId },
           required: true,
         },
       });
@@ -282,26 +297,66 @@ app.use((req, res, next) => {
 
 //Budget Routes all working without validations - investigate why
 //Create Budget --
+// app.post('/users/:user_id/budget', logIncomingRequest, async (request, response) => {
+//     try {
+//         console.log('Request Body:', request.body); 
+//         console.log('Request Params:', request.params); 
+//         const encryptedUserId = request.params.user_id;
+//         const decryptedUserId = security.decrypt(encryptedUserId);
+//         console.log('decryptedUserId budget:', decryptedUserId);
+
+//         if (!decryptedUserId) {
+//             return response.status(400).json({ message: 'Invalid user ID after decryption' });
+//         }
+    
+//         // Add `user_id` from route params to the request body
+//         // const budgeting = { ...request.body, user_id: request.params.userId };
+//         // const budgeting = { ...request.body, user_id: request.params.user_id };
+//         const budgeting = { ...request.body, user_id: decryptedUserId };
+//         console.log('test:', budgeting.user_id);
+
+//         // Validate the combined object
+//         const validatedBudget = budgetValidation(budgeting);
+
+//         // Proceed to the controller if validation passes
+//         await budgetController.createBudget( { ...value }, response);
+//         } catch (error) {
+//         console.error('Budget creation error:', error.message);
+//         response.status(400).json({ message: error.message });
+//     }
+// });
+
 app.post('/users/:user_id/budget', logIncomingRequest, async (request, response) => {
     try {
         console.log('Request Body:', request.body); 
         console.log('Request Params:', request.params); 
-    
-        // Add `user_id` from route params to the request body
-        // const budgeting = { ...request.body, user_id: request.params.userId };
-        const budgeting = { ...request.body, user_id: request.params.user_id };
-        console.log('test:', budgeting.user_id);
 
-        // Validate the combined object
-        const validatedBudget = budgetValidation(budgeting);
+        // ✅ Decrypt user_id before using it
+        const encryptedUserId = request.params.user_id;
+        const decryptedUserId = security.decrypt(encryptedUserId);
+        console.log('✅ Decrypted User ID:', decryptedUserId);
 
-        // Proceed to the controller if validation passes
-        await budgetController.createBudget( request, response);
+        if (!decryptedUserId) {
+            return response.status(400).json({ message: 'Invalid user ID after decryption' });
+        }
+
+        // ✅ Create budgeting object with decrypted user_id
+        const budgeting = { 
+            ...request.body, 
+            user_id: decryptedUserId  // ✅ Ensure user_id is included!
+        };
+        console.log('✅ Budgeting object being validated:', budgeting);
+
+        await budgetController.createBudget({ body: budgeting }, response);
     } catch (error) {
-        console.error('Budget creation error:', error.message);
-        response.status(400).json({ message: error.message });
+        console.error('🚨 Budget creation error:', error.message);
+        response.status(500).json({ message: 'Failed to create budget' });
     }
 });
+
+
+
+
 
 //Get User Budget
 app.get('/users/:userId/budget', logIncomingRequest, budgetController.getBudgetByUser);
@@ -309,6 +364,7 @@ app.get('/users/:userId/budget', logIncomingRequest, budgetController.getBudgetB
 //Get specific user budget
 app.get('/users/:userId/budget/:budgetId', logIncomingRequest, async (request, response) => {
     const { userId, budgetId } = request.params;
+    console.log('userId:', userId);
     console.log('Received budgetId:', budgetId, '| Length:', budgetId.length);
     console.log('Characters:', [...budgetId]);
 
@@ -326,8 +382,10 @@ app.get('/users/:userId/budget/:budgetId', logIncomingRequest, async (request, r
     console.log('Fetching budget for userId:', userId, 'budgetId:', budgetId);
 
     try {
+        const decryptedUserId = security.decrypt(userId);
+        console.log('decryptedUserId budget:', decryptedUserId);
         const budget = await Budget.findOne({
-            where: { user_id: userId, budget_id: budgetId },
+            where: { user_id: decryptedUserId, budget_id: budgetId },
         });
 
         console.log('Budget Query Result:', budget);

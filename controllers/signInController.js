@@ -3,6 +3,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/userModels');
+const security = require('../utils/encryption');
 const { Op } = require('sequelize');
 const { server } = require('@passwordless-id/webauthn');
 
@@ -108,16 +109,21 @@ async function signIn(request, response) {
             return response.status(400).json({ error: 'No valid authentication method provided' });
         }
 
+        //Encrypted User Id
+        const encryptedUserId = security.encrypt(user.id)
+
         // Generate token
         console.log('Generating JWT token...');
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        // const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id: encryptedUserId }, process.env.JWT_SECRET, { expiresIn: '1h' });
         console.log('JWT token generated:', token);
 
         response.status(200).json({
             message: 'Sign in successful',
             token,
             expiresIn: 3600,
-            user: { id: user.id, username: user.username }
+            user: { id: encryptedUserId, username: user.username }
+            // user: { id: user.id, username: user.username }
         });
         console.log('Sign-in response sent for user:', user.username);
 
