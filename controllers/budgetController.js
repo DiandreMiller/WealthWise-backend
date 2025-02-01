@@ -1,15 +1,26 @@
 const Budget = require('../models/budgetModel');
 const User = require('../models/userModels');
 // const userbudget = require('../validations/budgetValidation');
+const security = require('../utils/encryption');
 
 
 const getBudgetByUser = async (request, response) => {
     const { userId } = request.params;
     console.log('userId: budget controller', userId);
-
+    // const { encryptedUserId }  = request.params;
+    const decryptedUserId = security.decrypt(userId);  
+    console.log('encryptedUserId getBudgetByUser:', userId);
+    console.log('decryptedUserId getBudgetByUser:', decryptedUserId);
+   
     try {
+        const { userId } = request.params;
+        const decryptedUserId = security.decrypt(userId);  
+
+        if (!decryptedUserId) {
+            return response.status(400).json({ message: 'Invalid user ID after decryption' });
+        }
         const budget = await Budget.findOne({
-            where: { user_id: userId },
+            where: { user_id: decryptedUserId },
             include: { model: User, as: 'user', attributes: ['username', 'email'] },
         });
 
@@ -25,101 +36,31 @@ const getBudgetByUser = async (request, response) => {
 };
 
 
-// const createBudget = async (request, response) => {
-//     const user_id = request.params.user_id;
-//     const {
-//         monthly_income_goal,
-//         monthly_expense_goal,
-//         actual_income,
-//         actual_expenses,
-//     } = request.body;
-
-//     // Validate inputs
-//     if (
-//         !user_id ||
-//         isNaN(parseFloat(monthly_income_goal)) ||
-//         isNaN(parseFloat(monthly_expense_goal)) ||
-//         (actual_income !== undefined && actual_income !== null && isNaN(parseFloat(actual_income))) ||
-//         (actual_expenses !== undefined && actual_expenses !== null && isNaN(parseFloat(actual_expenses)))
-//     ) {
-//         return response
-//             .status(400)
-//             .json({ message: 'Invalid input data. Please provide valid numbers or leave fields empty for null values.' });
-//     }
-
-//     console.log('Data being inserted into budget:', {
-//         user_id,
-//         monthly_income_goal: parseFloat(monthly_income_goal),
-//         monthly_expense_goal: parseFloat(monthly_expense_goal),
-//         actual_income: actual_income ? parseFloat(actual_income) : null,
-//         actual_expenses: actual_expenses ? parseFloat(actual_expenses) : null,
-//     });
-
-//     try {
-//         const newBudget = await Budget.create({
-//             user_id,
-//             monthly_income_goal: parseFloat(monthly_income_goal),
-//             monthly_expense_goal: parseFloat(monthly_expense_goal),
-//             // actual_income: actual_income ? parseFloat(actual_income) : null,
-//             // actual_expenses: actual_expenses ? parseFloat(actual_expenses) : null,
-//             actual_income: actual_income !== undefined && actual_income !== null ? parseFloat(actual_income) : 0,
-//             actual_expenses: actual_expenses !== undefined && actual_expenses !== null ? parseFloat(actual_expenses) : 0,
-//         });
-//         console.log('Generated budgetId:', newBudget.budget_id, '| Length:', newBudget.budget_id.length);
-//         console.log('Successfully inserted budget:', newBudget.toJSON());
-
-//         response.status(201).json(newBudget);
-//     } catch (error) {
-//         response.status(500).json({ message: 'Failed to create budget', error: error.message });
-//     }
-// };
-
 const createBudget = async (request, response) => {
-    const user_id = request.params.user_id;
-    const {
-        monthly_income_goal,
-        monthly_expense_goal,
-        actual_income,
-        actual_expenses,
-    } = request.body;
-
-    // Validate inputs
-    const isValidInput =
-        !isNaN(parseFloat(monthly_income_goal)) &&
-        !isNaN(parseFloat(monthly_expense_goal)) &&
-        (actual_income === undefined || actual_income === null || !isNaN(parseFloat(actual_income))) &&
-        (actual_expenses === undefined || actual_expenses === null || !isNaN(parseFloat(actual_expenses)));
-
-    if (!isValidInput) {
-        return response
-            .status(400)
-            .json({ message: 'Invalid input data. Please provide valid numbers or leave fields empty for null values.' });
-    }
-
-    console.log(`[${new Date().toISOString()}] Data being inserted into budget:`, {
-        user_id,
-        monthly_income_goal: parseFloat(monthly_income_goal),
-        monthly_expense_goal: parseFloat(monthly_expense_goal),
-        actual_income: actual_income ? parseFloat(actual_income) : 0,
-        actual_expenses: actual_expenses ? parseFloat(actual_expenses) : 0,
-    });
-
     try {
-        const newBudget = await Budget.create({
+        const { monthly_income_goal, monthly_expense_goal, actual_income, actual_expenses, user_id } = request.body;
+
+        // Check if user_id exists
+        if (!user_id) {
+            throw new Error('User ID is required but is missing.');
+        }
+
+        // Convert string values to numbers
+        const numericBudget = {
             user_id,
-            monthly_income_goal: parseFloat(monthly_income_goal),
+            monthly_income_goal: parseFloat(monthly_income_goal), 
             monthly_expense_goal: parseFloat(monthly_expense_goal),
-            actual_income: actual_income !== undefined && actual_income !== null ? parseFloat(actual_income) : 0,
-            actual_expenses: actual_expenses !== undefined && actual_expenses !== null ? parseFloat(actual_expenses) : 0,
-        });
+            actual_income: parseFloat(actual_income),
+            actual_expenses: parseFloat(actual_expenses)
+        };
 
-        console.log(`[${new Date().toISOString()}] Generated budgetId: ${newBudget.budget_id} | Length: ${newBudget.budget_id.length}`);
-        console.log(`[${new Date().toISOString()}] Successfully inserted budget:`, newBudget.toJSON());
+        // Save the budget
+        const newBudget = await Budget.create(numericBudget);
 
-        response.status(201).json(newBudget);
+        return response.status(201).json(newBudget);
     } catch (error) {
-        console.error(`[${new Date().toISOString()}] Budget creation error:`, error.message);
-        response.status(500).json({ message: 'Failed to create budget', error: error.message });
+        console.error('Budget creation error:', error.message);
+        return response.status(400).json({ message: error.message });
     }
 };
 
