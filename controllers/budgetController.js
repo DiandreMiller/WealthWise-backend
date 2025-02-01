@@ -72,11 +72,11 @@ const updateBudget = async (request, response) => {
     const { monthly_income_goal, monthly_expense_goal, actual_income, actual_expenses } = request.body;
 
     try {
-
+        const decryptedUserId = security.decrypt(userId);  
         const budget = await Budget.findOne({
             where: {
                 budget_id: budgetId,
-                user_id: userId,
+                user_id: decryptedUserId,
             },
         });
 
