@@ -86,8 +86,3 @@ You’ll need to create a .env file in the root directory with the following val
 //Consider adding yahoo finance api:
 https://www.npmjs.com/package/yahoo-finance2
 
-//Remember to encrypt id
-Reading for encryption:
-
-https://www.progress.com/blogs/use-aes-256-encryption-secure-data
-// look up how facebook uses the user name
