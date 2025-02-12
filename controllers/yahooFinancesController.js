@@ -30,4 +30,30 @@ async function getFinancialDataCharts(request, response) {
     }
 }
 
-module.exports = { getFinancialDataCharts };
+
+async function searchStockSymbol(request, response) {
+    try {
+        const { companyName } = request.query;
+
+        if (!companyName) {
+            return response.status(400).json({ error: "Company name is required" });
+        }
+
+        console.log(`Searching for stock symbol for company: ${companyName}`);
+        const searchResults = await yahooFinance.search(companyName);
+
+        if (!searchResults.quotes.length) {
+            return response.status(404).json({ error: `No symbol found for company name '${companyName}'` });
+        }
+
+        const symbol = searchResults.quotes[0].symbol.toUpperCase();
+        console.log(`Found stock symbol: ${symbol}`);
+
+        response.json({ symbol });
+    } catch (error) {
+        console.error("Error searching for stock symbol:", error);
+        response.status(500).json({ error: "Error retrieving stock symbol" });
+    }
+}
+
+module.exports = { searchStockSymbol,  getFinancialDataCharts  };
