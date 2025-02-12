@@ -83,9 +83,7 @@ You’ll need to create a .env file in the root directory with the following val
 
 [Deployed Backend Link](https://icapital-financial-planner-backend.onrender.com/)
 
-//Consider adding yahoo finance api:
-https://www.npmjs.com/package/yahoo-finance2
-//Deepseek api
+
 
 
 //Look into mongodb and next.js for next projects
