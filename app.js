@@ -142,6 +142,9 @@ const expenseController = require('./controllers/expenseController');
 const budgetController = require('./controllers/budgetController');
 const userController = require('./controllers/userController');
 const resetPasswordController = require('./controllers/resetPasswordController');
+const yahooFinance = require('./controllers/yahooFinancesController')
+
+console.log('yahooFinance:', yahooFinance.getFinancialDataCharts);
 
 //Security
 const security = require('./utils/encryption')
@@ -450,6 +453,9 @@ app.post('/verify-passkey', logIncomingRequest, passkeyController.verifyPasskey)
 app.post('/authenticate-passkey', logIncomingRequest, authenticatePasskeyController.authenticatePasskey);
 
 app.get('/generate-challenge',  challengeController);
+
+//Finances Route
+app.get('/finances',logIncomingRequest, yahooFinance.getFinancialDataCharts)
 
 app.get('*', (request, response) => {
     response.status(404).send('Page not found again');
