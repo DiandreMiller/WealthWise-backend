@@ -237,6 +237,7 @@ app.get('/users/:id', async (request, response) => {
 
 //Create Income
 app.post('/users/:user_id/income', logIncomingRequest, incomeController.createIncome);
+
 //Get User Income
 app.get('/users/:user_id/income', logIncomingRequest, async (request, response) => {
     const userId = request.params.user_id;
