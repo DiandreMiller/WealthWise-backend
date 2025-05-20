@@ -14,7 +14,7 @@ const createDatabase = async () => {
         console.error('Error creating the database:', error);
     } finally {
         await sequelize.close();
-    }
+    };
 };
 
 createDatabase();
