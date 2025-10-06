@@ -89,7 +89,7 @@ app.use((request, response, next) => {
     
     
     if (blockedAgents.some(agent => userAgent && userAgent.includes(agent))) {
-        return response.status(403).send('Requests from API testing tools are not allowed.');
+        return response.status(401).send('Requests from API testing tools are not allowed.');
     }
     
     next();
