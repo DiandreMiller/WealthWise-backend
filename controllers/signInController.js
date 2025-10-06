@@ -50,7 +50,7 @@ async function signIn(request, response) {
 
             if (new Date() < lockOutEnd) {
                 console.warn('Account still locked. Current time:', new Date().toISOString());
-                return response.status(403).json({ error: `Account is locked, please try again at ${lockOutEnd.toLocaleString()}` });
+                return response.status(401).json({ error: `Account is locked, please try again at ${lockOutEnd.toLocaleString()}` });
             } else {
                 console.log('Lockout period has expired. Unlocking account...');
                 user.failedLoginAttempts = 0;
