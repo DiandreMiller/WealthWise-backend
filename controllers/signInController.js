@@ -58,7 +58,7 @@ async function signIn(request, response) {
       const passwordMatch = await bcrypt.compare(String(password).trim(), hashToCompare);
       console.log('Password comparison result:', passwordMatch);
 
-      // Lock state computed but never disclosed to client
+      // Lock state computed but never disclosed to client:
       let locked = false;
       if (user && user.accountLocked && user.lastFailedLogin) {
         const lockOutEnd = new Date(user.lastFailedLogin);
